@@ -2506,7 +2506,30 @@ pub fn rustdesk_interval(i: Interval) -> ThrottledInterval {
     ThrottledInterval::new(i)
 }
 
+// Branded build: name, ID server and key are compiled in from BRAND_APP_NAME / BRAND_SERVER /
+// BRAND_KEY (see .github/workflows/brand-windows.yml). Relay defaults to the same host on 21117.
+fn load_builtin_brand() {
+    let get = |v: Option<&'static str>| v.filter(|s| !s.is_empty());
+    if let Some(name) = get(option_env!("BRAND_APP_NAME")) {
+        *config::APP_NAME.write().unwrap() = name.to_owned();
+    }
+    let server = get(option_env!("BRAND_SERVER"));
+    let key = get(option_env!("BRAND_KEY"));
+    let (Some(server), Some(key)) = (server, key) else {
+        return;
+    };
+    let mut o = config::OVERWRITE_SETTINGS.write().unwrap();
+    o.insert(keys::OPTION_CUSTOM_RENDEZVOUS_SERVER.to_owned(), server.to_owned());
+    o.insert(keys::OPTION_KEY.to_owned(), key.to_owned());
+    drop(o);
+    config::BUILTIN_SETTINGS
+        .write()
+        .unwrap()
+        .insert(keys::OPTION_HIDE_SERVER_SETTINGS.to_owned(), "Y".to_owned());
+}
+
 pub fn load_custom_client() {
+    load_builtin_brand();
     #[cfg(debug_assertions)]
     if let Ok(data) = std::fs::read_to_string("./custom.txt") {
         read_custom_client(data.trim());
