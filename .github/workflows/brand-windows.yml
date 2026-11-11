@@ -1,6 +1,7 @@
 # Branded Windows x64 client with your own server baked in.
 # Actions tab -> "Build branded Windows client" -> Run workflow -> fill the 3 fields.
 # Output: artifact "<app_name>-windows-x64" containing a single portable <app_name>.exe.
+# Takes ~1-1.5h on the first run (vcpkg + Rust), faster later thanks to caches.
 # Steps are copied from flutter-build.yml (build-for-windows-flutter, x86_64), minus signing,
 # MSI, printer driver, virtual display driver and the privacy-mode topmost window.
 name: Build branded Windows client
