@@ -119,11 +119,12 @@ jobs:
           mv ./flutter/build/windows/x64/runner/Release ./rustdesk
 
       - name: Check brand is compiled in
+        # Only the app name: the optimizer can inline short constants like the IP into
+        # instructions, so they never appear as one string. All three go through the same
+        # option_env! path in load_builtin_brand(), so the name proves the env reached rustc.
         run: |
           $dll = [Text.Encoding]::GetEncoding(28591).GetString([IO.File]::ReadAllBytes("rustdesk\librustdesk.dll"))
-          foreach ($v in $env:BRAND_APP_NAME, $env:BRAND_SERVER, $env:BRAND_KEY) {
-            if (-not $dll.Contains($v)) { throw "'$v' not found in librustdesk.dll - brand was not compiled in" }
-          }
+          if (-not $dll.Contains($env:BRAND_APP_NAME)) { throw "BRAND_APP_NAME not found in librustdesk.dll - brand was not compiled in" }
 
       - name: Pack single portable exe
         shell: bash
